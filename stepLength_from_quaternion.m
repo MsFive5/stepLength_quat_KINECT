@@ -7,16 +7,24 @@ function stepLength_from_quaternion()
 close all;
 clear all;
 
-leg_length = 0.7372;
+leg_length = 0.7092;
 total_walking_distance = 50*30.48*0.01;
-dir_name='1125data';
+dir_name='1129data1';
 load(strcat(dir_name, '/test_data.mat'));
 plotYes = 1;
 
-
+if strcmp(dir_name,'1127data')
+    leg_length = 0.7288;
+elseif strcmp(dir_name, '1129data1')
+    leg_length = 0.7377;
+else
+    leg_length = 0.7219;
+end
 [hsl, ~] = heel_strike_detection(test_data.left.acc, plotYes);
 [hsr, ~] = heel_strike_detection(test_data.right.acc, plotYes);
-
+if strcmp(dir_name, '1129data1')
+    hsr = [1168;1373;1572;1768;1967;2161;2371;2574;2754;2915;3149;3337;3541];
+end
 [start_left, end_left] = walk_start_detection(test_data.left.acc, plotYes);
 [start_right, end_right] = walk_start_detection(test_data.right.acc, plotYes);
 
@@ -53,7 +61,7 @@ end
 
 function [k_out, v_out] = heel_strike_detection(acc, plotYes)
 acc_e = sqrt(acc.^2*[1;1;1]);
-[k, v] = v_findpeaks(acc_e,'q',100);
+[k, v] = v_findpeaks(acc_e,'q',130);
 v_out = v(v>1.2);
 k_out = k(v>1.2);
 k_out =round(k_out);

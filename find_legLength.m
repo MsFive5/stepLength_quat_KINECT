@@ -2,7 +2,7 @@ function find_legLength()
 close all;
 clear all;
 
-dir_name = '1125data';
+dir_name = '1129data1';
 plotYes = 1;
 
 % loading data
@@ -19,9 +19,10 @@ load(strcat(dir_name, '/kinect_data.mat'));
     define_pendulum_index(hsl, hsr, start_left, end_left, start_right, end_right);
 
 % first step on left
-leg_lengthR=find_leg_length(kinect_data, train_data, pend_indR(3,:),'r')
-leg_lengthL=find_leg_length(kinect_data, train_data, pend_indL(3,:),'l')
-
+for i = 1 : 3
+leg_lengthR=find_leg_length(kinect_data, train_data, pend_indR(i,:),'r')
+leg_lengthL=find_leg_length(kinect_data, train_data, pend_indL(i,:),'l')
+end
 end
 function leg_length=find_leg_length(kinect_data, train_data, pendulum_index,side)
 wlen=10;
@@ -33,8 +34,12 @@ quat = train_data.right.quat;
 else
 quat = train_data.left.quat;    
 end
-q1 = median(quat(pendulum_index(1)-wlen:pendulum_index(1)+wlen, :));
-q2 = median(quat(pendulum_index(2)-wlen:pendulum_index(2)+wlen, :));
+% figure; subplot(2,1,1);plot(sqrt(quat.^2*[1;1;1;1]));subplot(2,1,2); plot(quat);
+% q1 = median(quat(pendulum_index(1)-wlen:pendulum_index(1)+wlen, :));
+% q2 = median(quat(pendulum_index(2)-wlen:pendulum_index(2)+wlen, :));
+q1 = quat(pendulum_index(1),:);
+q2 = quat(pendulum_index(2),:);
+
 quat_diff = quatmultiply(q1,quatconj(q2));
 leg_length = stride_length / sin(acos(quat_diff(1))) / 2;
 end
@@ -42,7 +47,7 @@ function position = get_kinect_position(kinect_data, target_timestamp)
 % given timestamp from sensor signal, return 3D position information from
 % kinect data
 [c,i]=min(abs(kinect_data.timestamp - target_timestamp));
-display(c);
+%display(c);
 position = kinect_data.position(i,:);
 end
 function [left_pendulum_index, right_pendulum_index] = ...
@@ -74,7 +79,7 @@ end
 end
 function [k_out, v_out] = heel_strike_detection(acc, plotYes)
 acc_e = sqrt(acc.^2*[1;1;1]);
-[k, v] = v_findpeaks(acc_e,'q',150);
+[k, v] = v_findpeaks(acc_e,'q',200);
 v_out = v(v>1.2);
 k_out = k(v>1.2);
 k_out = round(k_out);

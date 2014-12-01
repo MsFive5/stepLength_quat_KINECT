@@ -3,7 +3,7 @@ function preprocessing(  )
 close all;
 clear all;
 
-dir_name='1125data';
+dir_name='1129data2';
 left_sensor_name='E8EE';
 right_sensor_name='E915';
 
@@ -23,8 +23,15 @@ timestamp = data_aligned.timestamp;
 if strcmp(dir_name,'1125data')
     train_ind = [9300 11000];
     test_ind = [16000 20000];
-else
-%     test_ind = [6000 min(size(testL,1),size(testR,1))];
+elseif strcmp(dir_name,'1127data')
+    train_ind = [16000 18000];
+    test_ind = [23000 27000];
+elseif strcmp(dir_name,'1129data1')
+    train_ind = [14600 16000];
+    test_ind = [21000 25500];
+elseif strcmp(dir_name,'1129data2')
+    train_ind = [13500 15000];
+    test_ind = [19000 22500]; 
 end
 test_data = calibrate_aligned(data_aligned, wlen, threshold, test_ind);
 train_data = calibrate_aligned(data_aligned, wlen, threshold, train_ind);
@@ -36,7 +43,7 @@ save(strcat(dir_name,'/kinect_data'), 'kinect_data');
 end
 
 function kinect_data = read_kinect_data(dir_name)
-kinect_listing = dir(strcat(dir_name,'/KINECT2_data_*'));
+kinect_listing = dir(strcat(dir_name,'/KINECT2_data_*SpineBase*'));
 data = csvread(strcat(dir_name, '/',kinect_listing(1).name),1,0);
 kinect_data.position = data(:,2:4);
 kinect_data.timestamp= data(:,1);
