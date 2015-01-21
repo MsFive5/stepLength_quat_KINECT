@@ -3,7 +3,7 @@ function preprocessing(  )
 close all;
 clear all;
 
-dir_name='1129data2';
+dir_name='1215data_leftstraight2';
 left_sensor_name='E8EE';
 right_sensor_name='E915';
 
@@ -32,6 +32,30 @@ elseif strcmp(dir_name,'1129data1')
 elseif strcmp(dir_name,'1129data2')
     train_ind = [13500 15000];
     test_ind = [19000 22500]; 
+elseif strcmp(dir_name,'1201maodata1')
+    train_ind = [8400 10000];
+    test_ind = [12000 16000]; 
+elseif strcmp(dir_name,'1201maodata2')
+    train_ind = [10800 11900];
+    test_ind = [14000 17600]; 
+elseif strcmp(dir_name,'1202lidata1')
+    train_ind = [14700 17000];
+    test_ind = [21000 24600];
+elseif strcmp(dir_name,'1202lidata2')
+    train_ind = [22600 24400];
+    test_ind = [25400 28500];
+elseif strcmp(dir_name, '1215data_leftstraight2')
+    train_ind = [13700 16500];
+    test_ind = [17800 22500];
+elseif strcmp(dir_name, '1215data_leftstraight1')
+    train_ind = [7400 9800];
+    test_ind = [13000 18000];
+elseif strcmp(dir_name, '1216xiaodata1')
+    train_ind = [6000 9000];
+    test_ind = [13400 16500];
+elseif strcmp(dir_name, '1216xiaodata2')
+    train_ind = [11000 13500];
+    test_ind = [14800 18000];
 end
 test_data = calibrate_aligned(data_aligned, wlen, threshold, test_ind);
 train_data = calibrate_aligned(data_aligned, wlen, threshold, train_ind);
@@ -275,12 +299,13 @@ function out = calibrate_aligned(in, wlen, threshold, ind)
     % this can be done only after the quaternion calibration
     acc_mean = mean(acc(1:initial_window_size,:),1);
     acc_g = gravity_subtraction(acc, acc_mean, quat); % acc in global frame
-    
+    gravity_s = map_gravity_to_sensor_frame(acc_mean, quat);
     out.left.acc = acc(ind(1):ind(2), :);
     out.left.gyr = gyr(ind(1):ind(2), :);
     out.left.quat = quat(ind(1):ind(2), :);
     out.left.acc_g = acc_g(ind(1):ind(2), :);
-    clear acc gyr quat acc_g;
+    out.left.gravity_s = gravity_s(ind(1):ind(2),:);
+    clear acc gyr quat acc_g gravity_s;
     
     acc = in.right(:,1:3);
     gyr = in.right(:,4:6);
@@ -294,12 +319,13 @@ function out = calibrate_aligned(in, wlen, threshold, ind)
     
     acc_mean = mean(acc(1:initial_window_size,:),1);
     acc_g = gravity_subtraction(acc, acc_mean, quat); % acc in global frame
-  
+    gravity_s = map_gravity_to_sensor_frame(acc_mean, quat);
+
     out.right.acc = acc(ind(1):ind(2), :);
     out.right.gyr = gyr(ind(1):ind(2), :);
     out.right.quat = quat(ind(1):ind(2), :);
     out.right.acc_g = acc_g(ind(1):ind(2), :);
-    
+    out.right.gravity_s = gravity_s(ind(1):ind(2),:);
     out.timestamp = in.timestamp(ind(1):ind(2));
 
 end
@@ -315,7 +341,14 @@ for i = 1:length(acc)
 end
 
 end
-
+function gravity_s = map_gravity_to_sensor_frame(acc_mean, quat)
+gravity = [0 acc_mean];
+gravity_s = zeros(size(quat));
+for i = 1 : size(quat,1)
+    gravity_s(i,:) = quatmultiply(quatmultiply(quatconj(quat(i,:)),gravity),quat(i,:));
+end
+gravity_s = gravity_s(:,2:4);
+end
 function initial = determine_initial_window(acc, wlen, threshold)
 % 1st row: beginning zero velocity window
 % 2nd row: endding zero velocity window
